@@ -25,6 +25,7 @@ namespace Plagiabot\Web;
 use DateInterval;
 use NumberFormatter;
 use Plagiabot\Web\Controllers\AddReview;
+use Plagiabot\Web\Controllers\API\APIRecords;
 use Plagiabot\Web\Controllers\AuthHandler;
 use Plagiabot\Web\Controllers\CopyPatrol;
 use Plagiabot\Web\Controllers\Ithenticate;
@@ -360,6 +361,31 @@ class App extends AbstractApp {
 						$page();
 					}
 				)->name( 'undo_review' );
+			} );
+
+		// API routes.
+		$slim->group( '/:wikiLang/api', $middleware['inject-user'],
+			$middleware['set-environment'],
+			function () use ( $slim ) {
+				$routeConditions = [
+					'wikiLang' => '(' . implode( '|', $this->getSupportedLanguages() ) . ')',
+				];
+				$slim->get( '/records',
+					function ( $wikiLang ) use ( $slim ) {
+						$page = new APIRecords( $slim );
+						$page->setDao( $this->getPlagiabotDao() );
+						$page->setWikiDao( $this->getWikiDao( $wikiLang ) );
+						$page();
+					}
+				)->name( 'api_records' )->setConditions( $routeConditions );
+				$slim->get( '/records/:ithenticateId',
+					function ( $wikiLang, $ithenticateId ) use ( $slim ) {
+						$page = new APIRecords( $slim );
+						$page->setDao( $this->getPlagiabotDao() );
+						$page->setWikiDao( $this->getWikiDao( $wikiLang ) );
+						$page( $ithenticateId );
+					}
+				)->name( 'api_single_record' )->setConditions( $routeConditions );
 			} );
 
 		// Stylesheet route.

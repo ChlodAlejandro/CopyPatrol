@@ -309,7 +309,7 @@ class CopyPatrol extends Controller {
 	 *
 	 * @return array Usernames
 	 */
-	private function getUserWhitelist() {
+	protected function getUserWhitelist() {
 		static $whitelist = null;
 		// Don't re-fetch the whitelist over and over.
 		if ( $whitelist !== null ) {
@@ -334,11 +334,14 @@ class CopyPatrol extends Controller {
 	 * Get plagiarism records based on URL parameters and whether or not the user is logged in
 	 * This function also sets view variables for the filters, which get rendered as radio options
 	 *
+	 * @param int $id The ID of the record to fetch. Set to `null` to fetch max no. of records.
 	 * @return array Collection of plagiarism records
 	 */
-	protected function getRecords() {
+	protected function getRecords( $id ) {
 		// if an ID is set, we want to show just that record
-		$id = $this->request->get( 'id' );
+		if ( !isset( $id ) ) {
+			$id = $this->request->get( 'id' );
+		}
 		if ( $id ) {
 			$this->view->set( 'permalink', true );
 			$this->view->set( 'filter', 'all' );
@@ -369,7 +372,10 @@ class CopyPatrol extends Controller {
 		$searchCriteria = $this->request->get( 'searchCriteria' );
 
 		// make this easier when working locally
-		$numRecords = $_SERVER['HTTP_HOST'] === 'localhost' ? 10 : 50;
+		$numRecords = min(
+			$this->request->get( 'limit' ),
+			$_SERVER['HTTP_HOST'] === 'localhost' ? 10 : 50
+		);
 
 		// compile all options in an array
 		$options = [
