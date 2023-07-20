@@ -44,10 +44,9 @@ services:
                 source: "."
                 target: "/app"
                 read_only: true
-            # Cache directory should not be read-only
             -   type: bind
-                source: "./cache"
-                target: "/app/var/cache"
+                source: "./var"
+                target: "/app/var"
         restart: always
         stop_grace_period: 1m
     copypatrol-redis:
