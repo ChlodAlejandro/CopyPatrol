@@ -10,7 +10,7 @@ RUN apt update && apt install -y unzip
 
 # Install dependencies
 COPY composer.* ${COPYPATROL_ROOT}
-RUN composer install
+RUN composer install --no-scripts
 
 FROM docker-registry.tools.wmflabs.org/toolforge-php74-sssd-web:latest AS base
 # ===============================================
@@ -46,6 +46,8 @@ COPY --from=dependencies ${COPYPATROL_ROOT}/vendor ${COPYPATROL_ROOT}/vendor
 
 # Copy files
 COPY . ${COPYPATROL_ROOT}
+
+RUN composer run-script post-install-cmd
 
 # Symlink CopyPatrol public to document root
 RUN rm -rf /var/www/html
